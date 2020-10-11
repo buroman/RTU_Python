@@ -10,6 +10,7 @@ import datetime
 import json
 from time import strftime # FOR OPTION - DEADLINE
 import sys  # FOR EXITING THE SCRIPT
+from datetime import timedelta
 
 my_dict = {}
 
@@ -18,19 +19,27 @@ my_dict = {}
 def info_from_json():                              #COMMENT:
     with open('diana_reminder.json', 'r') as f:    # IF WE HAVE GREATED A NEW FILE, WE HAVE TO WRITE IT In  {} (EMPTY DICT)
         read = json.load(f)                        # IN OTHER WAY - WE WILL GET THE ERROR
-        my_dict.update(read)
+        (my_dict.update(read))
         f.close()
+        
+def dump_json():
+    with open('diana_reminder.json', 'w') as f:  # OVERWRITE INFORMATION TO THE JSON FILE AN CLOSE IT
+        data = json.dump(my_dict,f)
+        f.close()
+    
 
 # CONTROL PANEL FUNCTION. THIS FUNCTION STARTS AFTER INFO EXTRACTION AND WE CAN CHOOSE ONE OF THE 3 OPTIONS:
 
 def menu():
     marker = ''
-    marker = input('New input: n \nData check: c\nExit: e \n')
-    if marker == 'n':
+    marker = input('New input: n \nData check: c\nRemove data: r\nExit: e \n').upper()
+    if marker == 'N':
         return add_info()  # WE CAN ADD NEW INFORMATION (SUBJECT NAME AND DEADLINE)
-    elif marker == 'c':
+    elif marker == 'C':
         return data_chek_from_json()   # WE CAN CHECK OUR DEADLINES
-    elif marker == 'e':
+    elif marker == 'R':
+        return remove_info()
+    elif marker == 'E':
         return exit() # SAVE INFORMATION FROM THE DICTIONARY AND CLOSE THE PROGRAMM
     else:
         return menu()
@@ -52,8 +61,10 @@ def data_chek_from_json():
             print("Reminder: provide documents for ", k ," you have only ",delta.days," days till DEADLINE!" ) # FIRST REMINDER
         elif 0 < delta.days < 4:
             print("LAST Reminder: provide documents for ", k ," you have only ",delta.days," days till DEADLINE!" ) # FINAL REMINDER
+            return extend()
         elif delta.days < 0:
             print("DEADLINE was: ", dt_time, "Your account is closed") # TIME EXCEEDED, CLOSURE OF THE CLIENT'S ACCOUNT
+            return extend()
 
 # INFORMATION ADDING FUNCTION TO THE DICTIONARY      
             
@@ -61,7 +72,8 @@ def add_info():
     
 # INPUT THE COMPANY NAME
     
-    company_name = input("Input the company name: ")    # ADD SUBJECT NAME
+    company_name = input("Input the company name: ").upper()    # ADD SUBJECT NAME
+
     
 # INPUT OF THE DEADLINE
     
@@ -70,15 +82,30 @@ def add_info():
     day = int(input("day: "))
     deadline_ISO = datetime.datetime(year, month, day).isoformat() # CONVERTS DEADLINE IN TO THE  "ISO FORMAT", TO CONVERT DEADLINE INFO TO STRING AND SAVE IT TO JSON FILE
     my_dict.update({company_name:deadline_ISO})      # ADD NEW INFORMATION TO THE DICTIONARY
+    return dump_json()
+    return info_from_json()
 
-# EXIT AND INFORMATION SAVE TO JSON FILE FUNCTION
-
+def remove_info():
+    try:
+        x = input("Which object do you want to remove? ").upper()
+        my_dict.pop(x)
+        print("Object> ",x, " <has been deleted!")
+        return dump_json()
+        return info_from_json()
+        print(my_dict)
+        return menu()
+    
+    except:
+        print("No such object: ",x)
+    
+    finally:
+        return menu()
+        
+# EXIT FROM PROGRAMM
 def exit():
-    with open('diana_reminder.json', 'w') as f:  # OVERWRITE INFORMATION TO THE JSON FILE AN CLOSE IT
-        data = json.dump(my_dict,f)
-        f.close()
-        print("You are not in the programm!")
-        print(sys.exit())    # EXIT FROM THE SCRIPT
+
+    print("You are not in the programm!")
+    print(sys.exit())    # EXIT FROM THE SCRIPT
         
 # PROGRAM CODE
       
